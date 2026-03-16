@@ -35,6 +35,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void OnTurnFinished(); // 턴 애니메이션 종료 시 캐릭터에 알리는 함수
 
+	UPROPERTY(BlueprintReadOnly, Category = "Movement")
+	bool bIsRunning = false; // 달리기 여부
+
+	UPROPERTY(BlueprintReadOnly, Category = "Movement")
+	bool bHasMovementInput = false; // 이동 입력 여부
+
 private:
 	UPROPERTY()
 	TObjectPtr<class AMainCharacter> OwnerCharacter; // 캐릭터 참조

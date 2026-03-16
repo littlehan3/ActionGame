@@ -26,6 +26,8 @@ void UMainCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	// 캐릭터의 bShouldTurn과 YawDelta 방향으로 턴 방향 결정
 	bool bShouldTurn = OwnerCharacter->GetShouldTurn();
 	float YawDelta = OwnerCharacter->GetYawDeltaToController();
+	bIsRunning = OwnerCharacter->GetRunning();
+	bHasMovementInput = OwnerCharacter->GetHasMovementInput();
 
 	bIsTurningLeft = bShouldTurn && YawDelta < 0.0f; // 왼쪽 턴 (카메라가 캐릭터 왼쪽)
 	bIsTurningRight = bShouldTurn && YawDelta > 0.0f; // 오른쪽 턴 (카메라가 캐릭터 오른쪽)
