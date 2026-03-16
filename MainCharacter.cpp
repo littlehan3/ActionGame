@@ -27,6 +27,7 @@ AMainCharacter::AMainCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // 회전 속도 설정
 	GetCharacterMovement()->MaxWalkSpeed = 300.0f; // 걷기 속도
 	GetCharacterMovement()->BrakingDecelerationWalking = 173.0f; // 감속: ~1.73초에 걸쳐 정지 (WalkStop 애니메이션길이와 동기화)
+
 }
 
 void AMainCharacter::BeginPlay()
@@ -51,6 +52,8 @@ void AMainCharacter::Tick(float DeltaTime)
 
 	// Speed: 현재 수평 속력
 	Speed = GetVelocity().Size2D();
+
+	// 이동 입력 여부: MoveAction의 Triggered/Completed에서 관리
 
 	// Direction: 이동 방향과 캐릭터 정면의 각도 차
 	if (Speed > 0.0f) // 이동 중인 경우
@@ -142,12 +145,17 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
 	if (!IsValid(EnhancedInputComponent)) return; // 유효성 검사
 
-	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMainCharacter::Move); // Move 액션 바인딩
+	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMainCharacter::Move); // Move 액션 바인딩 (매 프레임 호출)
+	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &AMainCharacter::StopMoving); // Move 액션 종료 바인딩 (키를 뗄 때)
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMainCharacter::Look); // Look 액션 바인딩
+	EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Started, this, &AMainCharacter::StartRunning); // Run 액션 시작 바인딩
+	EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &AMainCharacter::StopRunning); // Run 액션 종료 바인딩
 }
 
 void AMainCharacter::Move(const FInputActionValue& Value)
 {
+	bHasMovementInput = true; // 이동 입력 활성화 (Tick에서 매 프레임 false로 리셋)
+
 	FVector2D Input = Value.Get<FVector2D>(); // 입력 데이터 FVector2D 형태로 가져옴
 
 	// 카메라 기준 방향으로 이동
@@ -159,9 +167,26 @@ void AMainCharacter::Move(const FInputActionValue& Value)
 	AddMovementInput(RightDirection, Input.X); // 우측 방향으로 이동 입력 추가
 }
 
+void AMainCharacter::StopMoving(const FInputActionValue& Value)
+{
+	bHasMovementInput = false; // 이동 입력 해제 (WASD를 뗄 때)
+}
+
 void AMainCharacter::Look(const FInputActionValue& Value)
 {
 	FVector2D Input = Value.Get<FVector2D>(); // 입력 데이터 FVector2D 형태로 가져옴
 	AddControllerYawInput(Input.X * LookSensitivity); // 좌우 시선 방향 입력
 	AddControllerPitchInput(-Input.Y * LookSensitivity); // 상하 시선 방향 입력 (반전)
+}
+
+void AMainCharacter::StartRunning()
+{
+	GetCharacterMovement()->MaxWalkSpeed = RunSpeed; // 달리기 속도로 변경
+	bIsRunning = true; // 달리기 상태로 설정
+}
+
+void AMainCharacter::StopRunning()
+{
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed; // 걷기 속도로 변경
+	bIsRunning = false; // 달리기 상태 해제
 }

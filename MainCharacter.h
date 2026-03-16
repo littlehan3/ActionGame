@@ -24,6 +24,8 @@ public:
 	float GetTurnRate() const { return TurnRate; } // 캐릭터의 제자리 턴 판별용 Yaw 값 변화량 반환
 	bool GetShouldTurn() const { return bShouldTurn; } // 턴 필요 여부 반환
 	float GetYawDeltaToController() const { return YawDeltaToController; } // 컨트롤러와의 각도 차 반환
+	bool GetRunning() const { return bIsRunning; } // 달리기 여부 반환
+	bool GetHasMovementInput() const { return bHasMovementInput; } // 이동 입력 여부 반환
 
 	// AnimInstance에서 턴 애니메이션 종료 시 호출
 	void OnTurnAnimationFinished();
@@ -47,8 +49,11 @@ private:
 	TObjectPtr<UInputAction> MoveAction; // 이동 입력 액션
 	UPROPERTY(EditAnywhere, Category = "Input", meta = (AllowPrivateAccess = "true"));
 	TObjectPtr<UInputAction> LookAction; // 시선 방향 입력 액션
+	UPROPERTY(EditAnywhere, Category = "Input", meta = (AllowPrivateAccess = "true"));
+	TObjectPtr<UInputAction> RunAction; // 달리기 입력 액션
 
 	void Move(const FInputActionValue& Value); // 이동 함수 선언
+	void StopMoving(const FInputActionValue& Value); // 이동 종료 함수 선언
 	void Look(const FInputActionValue& Value); // 시선 방향 함수 선언
 
 	UPROPERTY(EditAnywhere, Category = "Camera", meta = (AllowPrivateAccess = "true"))
@@ -70,4 +75,14 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	float TurnTriggerAngle = 90.0f; // 턴이 필요한 각도 차이 임계값
+	UPROPERTY(EditAnywhere, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	float WalkSpeed = 300.0f; // 걷기 속도
+	UPROPERTY(EditAnywhere, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	float RunSpeed = 600.0f; // 달리기 속도
+	bool bIsRunning = false; // 달리기 여부
+	bool bHasMovementInput = false; // 이동 입력 여부
+
+	void StartRunning(); // 달리기 시작 함수
+	void StopRunning(); // 달리기 종료 함수
+	
 };
